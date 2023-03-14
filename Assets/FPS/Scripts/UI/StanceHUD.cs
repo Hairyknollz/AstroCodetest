@@ -16,18 +16,37 @@ namespace Unity.FPS.UI
         [Tooltip("Sprite to display when crouching")]
         public Sprite CrouchingSprite;
 
+        [Tooltip("Sprite to display when sliding")]
+        public Sprite SlidingSprite;
+
         void Start()
         {
             PlayerCharacterController character = FindObjectOfType<PlayerCharacterController>();
             DebugUtility.HandleErrorIfNullFindObject<PlayerCharacterController, StanceHUD>(character, this);
             character.OnStanceChanged += OnStanceChanged;
 
-            OnStanceChanged(character.IsCrouching);
+            OnStanceChanged("standing");
         }
 
-        void OnStanceChanged(bool crouched)
+        void OnStanceChanged(string stanceName)
         {
-            StanceImage.sprite = crouched ? CrouchingSprite : StandingSprite;
+            //changes stanceHUD image to correct image depending on current stance
+
+            switch (stanceName)
+            {
+                case "crouched":
+                    StanceImage.sprite = CrouchingSprite;
+                    break;
+                case "standing":
+                    StanceImage.sprite = StandingSprite;
+                    break;
+                case "sliding":
+                    StanceImage.sprite = SlidingSprite;
+                    break;
+                default:
+                    StanceImage.sprite = StandingSprite;
+                    break;
+            }
         }
     }
 }

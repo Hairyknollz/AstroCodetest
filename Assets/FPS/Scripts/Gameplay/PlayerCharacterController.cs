@@ -1,4 +1,5 @@
-﻿using Unity.FPS.Game;
+﻿using System.Collections;
+using Unity.FPS.Game;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -74,6 +75,9 @@ namespace Unity.FPS.Gameplay
         [Tooltip("Sound played for footsteps")]
         public AudioClip FootstepSfx;
 
+        [Tooltip("Sound played when sliding")]
+        public AudioClip SlidingSFX;
+
         [Tooltip("Sound played when jumping")] public AudioClip JumpSfx;
         [Tooltip("Sound played when landing")] public AudioClip LandSfx;
 
@@ -96,13 +100,24 @@ namespace Unity.FPS.Gameplay
         [Tooltip("Damage recieved when falling at the maximum speed")]
         public float FallDamageAtMaxSpeed = 50f;
 
-        public UnityAction<bool> OnStanceChanged;
+        [Header("Sliding")]
+        [Tooltip("Amount to tilt the camera during the slide")]
+        public float SlideCameraTilt = 3f;
+
+        [Tooltip("How long the player can slide for")]
+        public float SlidingLength = 1f;
+
+        public UnityAction<string> OnStanceChanged;
 
         public Vector3 CharacterVelocity { get; set; }
+        public Vector3 SlideVelocity { get; set; }
         public bool IsGrounded { get; private set; }
         public bool HasJumpedThisFrame { get; private set; }
         public bool IsDead { get; private set; }
         public bool IsCrouching { get; private set; }
+        public bool IsSliding { get; private set; }
+
+        public Coroutine slidingLengthCoroutine;
 
         public float RotationMultiplier
         {
@@ -209,11 +224,64 @@ namespace Unity.FPS.Gameplay
             if (m_InputHandler.GetCrouchInputDown())
             {
                 SetCrouchingState(!IsCrouching, false);
+                
             }
+
 
             UpdateCharacterHeight(false);
 
             HandleCharacterMovement();
+        }
+
+        private void FixedUpdate()
+        {
+            //if IsSliding is true, begin the sliding movement
+            if(IsSliding)
+                SlideMovement();
+        }
+
+
+        //Changes player stance, sets IsSliding to true and begins the slide length coroutine countdown
+        void BeginSlide()
+        {
+            SlideVelocity = CharacterVelocity;
+            IsSliding = true;
+            SetCrouchingState(true, true);
+            if (OnStanceChanged != null)
+            {
+                OnStanceChanged.Invoke("sliding");
+            }
+            slidingLengthCoroutine = StartCoroutine(SlidingLengthCountdown());
+        }
+
+        void SlideMovement()
+        {
+            //Vector3 friction = Vector3.Lerp(Vector3.zero, Vector3.one, .1f);
+            //Moves character in the direction the slide was initiated from
+            m_Controller.Move(SlideVelocity * Time.fixedDeltaTime);
+            
+        }
+        //Will stop player sliding after waiting for a few seconds defined by the SlidingLength variable
+        IEnumerator SlidingLengthCountdown()
+        {
+            yield return new WaitForSeconds(SlidingLength);
+            StopSliding();
+        }
+
+        // Stops the slidingLengthCountdown coroutine if it hasnt ended
+        // Resets player stance to standing
+        // Sets IsSliding to false
+        void StopSliding()
+        {
+            if (slidingLengthCoroutine != null)
+                StopCoroutine(slidingLengthCoroutine);
+
+            IsSliding = false;
+            SetCrouchingState(false, false);
+            if (OnStanceChanged != null)
+            {
+                OnStanceChanged.Invoke("standing");
+            }
         }
 
         void OnDie()
@@ -283,18 +351,27 @@ namespace Unity.FPS.Gameplay
                 m_CameraVerticalAngle = Mathf.Clamp(m_CameraVerticalAngle, -89f, 89f);
 
                 // apply the vertical angle as a local rotation to the camera transform along its right axis (makes it pivot up and down)
-                PlayerCamera.transform.localEulerAngles = new Vector3(m_CameraVerticalAngle, 0, 0);
+                // apply slight tilt to Z-axis of camera during sliding
+                PlayerCamera.transform.localEulerAngles = new Vector3(m_CameraVerticalAngle, 0, IsSliding ? SlideCameraTilt : 0);
             }
 
             // character movement handling
             bool isSprinting = m_InputHandler.GetSprintInputHeld();
             {
-                if (isSprinting)
+
+                //only stop crouching on sprint if player is not sliding
+                if (isSprinting && !IsSliding)
                 {
                     isSprinting = SetCrouchingState(false, false);
                 }
 
                 float speedModifier = isSprinting ? SprintSpeedModifier : 1f;
+
+                //if player presses the crouch button while grounded, sprinting and the player is not already sliding then the player will begin to slide
+                if (m_InputHandler.GetCrouchInputDown() && !IsSliding && IsGrounded && isSprinting)
+                {
+                    BeginSlide();
+                }
 
                 // converts move input to a worldspace vector based on our character's transform orientation
                 Vector3 worldspaceMoveInput = transform.TransformVector(m_InputHandler.GetMoveInput());
@@ -307,6 +384,7 @@ namespace Unity.FPS.Gameplay
                     // reduce speed if crouching by crouch speed ratio
                     if (IsCrouching)
                         targetVelocity *= MaxSpeedCrouchedRatio;
+
                     targetVelocity = GetDirectionReorientedOnSlope(targetVelocity.normalized, m_GroundNormal) *
                                      targetVelocity.magnitude;
 
@@ -317,6 +395,8 @@ namespace Unity.FPS.Gameplay
                     // jumping
                     if (IsGrounded && m_InputHandler.GetJumpInputDown())
                     {
+                        if (IsSliding)
+                            StopSliding();
                         // force the crouch state to false
                         if (SetCrouchingState(false, false))
                         {
@@ -342,14 +422,23 @@ namespace Unity.FPS.Gameplay
                     // footsteps sound
                     float chosenFootstepSfxFrequency =
                         (isSprinting ? FootstepSfxFrequencyWhileSprinting : FootstepSfxFrequency);
-                    if (m_FootstepDistanceCounter >= 1f / chosenFootstepSfxFrequency)
-                    {
-                        m_FootstepDistanceCounter = 0f;
-                        AudioSource.PlayOneShot(FootstepSfx);
-                    }
+                    //dont play footstep SFX if player is sliding
+                    if(!IsSliding)
+                    { 
+                        if (m_FootstepDistanceCounter >= 1f / chosenFootstepSfxFrequency)
+                        {
+                            m_FootstepDistanceCounter = 0f;
+                            AudioSource.PlayOneShot(FootstepSfx);
+                        }
 
-                    // keep track of distance traveled for footsteps sound
-                    m_FootstepDistanceCounter += CharacterVelocity.magnitude * Time.deltaTime;
+                        // keep track of distance traveled for footsteps sound
+                        m_FootstepDistanceCounter += CharacterVelocity.magnitude * Time.deltaTime;
+                    }
+                    //Play sliding SFX instead when sliding
+                    //else if(IsSliding)
+                    //{
+                    //    AudioSource.PlayOneShot(SlidingSFX);
+                    //}
                 }
                 // handle air movement
                 else
@@ -371,7 +460,8 @@ namespace Unity.FPS.Gameplay
             // apply the final calculated velocity value as a character movement
             Vector3 capsuleBottomBeforeMove = GetCapsuleBottomHemisphere();
             Vector3 capsuleTopBeforeMove = GetCapsuleTopHemisphere(m_Controller.height);
-            m_Controller.Move(CharacterVelocity * Time.deltaTime);
+            if(!IsSliding)
+                m_Controller.Move(CharacterVelocity * Time.deltaTime);
 
             // detect obstructions to adjust velocity accordingly
             m_LatestImpactSpeed = Vector3.zero;
@@ -467,7 +557,10 @@ namespace Unity.FPS.Gameplay
 
             if (OnStanceChanged != null)
             {
-                OnStanceChanged.Invoke(crouched);
+                if (crouched)
+                    OnStanceChanged.Invoke("crouched");
+                else
+                    OnStanceChanged.Invoke("standing");
             }
 
             IsCrouching = crouched;

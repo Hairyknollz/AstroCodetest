@@ -307,36 +307,39 @@ namespace Unity.FPS.Gameplay
         // Updates the weapon bob animation based on character speed
         void UpdateWeaponBob()
         {
-            if (Time.deltaTime > 0f)
+            if (!m_PlayerCharacterController.IsSliding)
             {
-                Vector3 playerCharacterVelocity =
-                    (m_PlayerCharacterController.transform.position - m_LastCharacterPosition) / Time.deltaTime;
-
-                // calculate a smoothed weapon bob amount based on how close to our max grounded movement velocity we are
-                float characterMovementFactor = 0f;
-                if (m_PlayerCharacterController.IsGrounded)
+                if (Time.deltaTime > 0f)
                 {
-                    characterMovementFactor =
-                        Mathf.Clamp01(playerCharacterVelocity.magnitude /
-                                      (m_PlayerCharacterController.MaxSpeedOnGround *
-                                       m_PlayerCharacterController.SprintSpeedModifier));
+                    Vector3 playerCharacterVelocity =
+                        (m_PlayerCharacterController.transform.position - m_LastCharacterPosition) / Time.deltaTime;
+
+                    float characterMovementFactor = 0f;
+                    // calculate a smoothed weapon bob amount based on how close to our max grounded movement velocity we are
+                    if (m_PlayerCharacterController.IsGrounded)
+                    {
+                        characterMovementFactor =
+                            Mathf.Clamp01(playerCharacterVelocity.magnitude /
+                                          (m_PlayerCharacterController.MaxSpeedOnGround *
+                                           m_PlayerCharacterController.SprintSpeedModifier));
+                    }
+
+                    m_WeaponBobFactor =
+                        Mathf.Lerp(m_WeaponBobFactor, characterMovementFactor, BobSharpness * Time.deltaTime);
+
+                    // Calculate vertical and horizontal weapon bob values based on a sine function
+                    float bobAmount = IsAiming ? AimingBobAmount : DefaultBobAmount;
+                    float frequency = BobFrequency;
+                    float hBobValue = Mathf.Sin(Time.time * frequency) * bobAmount * m_WeaponBobFactor;
+                    float vBobValue = ((Mathf.Sin(Time.time * frequency * 2f) * 0.5f) + 0.5f) * bobAmount *
+                                      m_WeaponBobFactor;
+
+                    // Apply weapon bob
+                    m_WeaponBobLocalPosition.x = hBobValue;
+                    m_WeaponBobLocalPosition.y = Mathf.Abs(vBobValue);
+
+                    m_LastCharacterPosition = m_PlayerCharacterController.transform.position;
                 }
-
-                m_WeaponBobFactor =
-                    Mathf.Lerp(m_WeaponBobFactor, characterMovementFactor, BobSharpness * Time.deltaTime);
-
-                // Calculate vertical and horizontal weapon bob values based on a sine function
-                float bobAmount = IsAiming ? AimingBobAmount : DefaultBobAmount;
-                float frequency = BobFrequency;
-                float hBobValue = Mathf.Sin(Time.time * frequency) * bobAmount * m_WeaponBobFactor;
-                float vBobValue = ((Mathf.Sin(Time.time * frequency * 2f) * 0.5f) + 0.5f) * bobAmount *
-                                  m_WeaponBobFactor;
-
-                // Apply weapon bob
-                m_WeaponBobLocalPosition.x = hBobValue;
-                m_WeaponBobLocalPosition.y = Mathf.Abs(vBobValue);
-
-                m_LastCharacterPosition = m_PlayerCharacterController.transform.position;
             }
         }
 
