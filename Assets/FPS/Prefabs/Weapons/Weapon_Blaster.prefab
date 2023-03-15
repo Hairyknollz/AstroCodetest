@@ -142,6 +142,7 @@ GameObject:
   - component: {fileID: 8745372878802205896}
   - component: {fileID: 555188489432107117}
   - component: {fileID: 8090847488450120274}
+  - component: {fileID: 57868773239289148}
   m_Layer: 0
   m_Name: Weapon_Blaster
   m_TagString: Untagged
@@ -200,7 +201,7 @@ MonoBehaviour:
   RecoilForce: 1
   AimZoomRatio: 0.5
   AimOffset: {x: 0, y: 0.075, z: 0}
-  AutomaticReload: 1
+  AutomaticReload: 0
   HasPhysicalBullets: 0
   ClipSize: 30
   ShellCasing: {fileID: 0}
@@ -219,11 +220,15 @@ MonoBehaviour:
     type: 3}
   UnparentMuzzleFlash: 0
   ShootSfx: {fileID: 8300000, guid: 53d2238f4c4b2aa4f8e559c7af9e0126, type: 3}
+  tempReloadSFX: {fileID: 8300000, guid: 9ec88242a8393c244b13c77f8f0f2394, type: 3}
   ChangeWeaponSfx: {fileID: 8300000, guid: 7b83d61917ac1224f942a0609b1221f2, type: 3}
+  reloadingTime: 2
   UseContinuousShootSound: 0
   ContinuousShootStartSfx: {fileID: 0}
   ContinuousShootLoopSfx: {fileID: 0}
   ContinuousShootEndSfx: {fileID: 0}
+  CurrentAmmo: 0
+  ReserveAmmo: 0
 --- !u!114 &8745372878802205896
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -419,6 +424,26 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!95 &57868773239289148
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2225486910712267859}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: fb8b456a336d0e64a99258ffe70e4e5d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
 --- !u!1 &2867801751256125023
 GameObject:
   m_ObjectHideFlags: 0

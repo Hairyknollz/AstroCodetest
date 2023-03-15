@@ -122,8 +122,14 @@ namespace Unity.FPS.Game
         [Tooltip("sound played when shooting")]
         public AudioClip ShootSfx;
 
+        [Tooltip("sound played when manual reloading")]
+        public AudioClip tempReloadSFX;
+
         [Tooltip("Sound played when changing to this weapon")]
         public AudioClip ChangeWeaponSfx;
+
+        [Tooltip("How long it takes to realod the weapon")]
+        public float reloadingTime = 2f;
 
         [Tooltip("Continuous Shooting Sound")] public bool UseContinuousShootSound = false;
         public AudioClip ContinuousShootStartSfx;
@@ -132,11 +138,12 @@ namespace Unity.FPS.Game
         AudioSource m_ContinuousShootAudioSource = null;
         bool m_WantsToShoot = false;
 
+
         public UnityAction OnShoot;
         public event Action OnShootProcessed;
 
         int m_CarriedPhysicalBullets;
-        float m_CurrentAmmo;
+        public float CurrentAmmo, ReserveAmmo;
         float m_LastTimeShot = Mathf.NegativeInfinity;
         public float LastChargeTriggerTimestamp { get; private set; }
         Vector3 m_LastMuzzlePosition;
@@ -155,7 +162,7 @@ namespace Unity.FPS.Game
             (MaxAmmo * BulletsPerShot);
 
         public int GetCarriedPhysicalBullets() => m_CarriedPhysicalBullets;
-        public int GetCurrentAmmo() => Mathf.FloorToInt(m_CurrentAmmo);
+        public int GetCurrentAmmo() => Mathf.FloorToInt(CurrentAmmo);
 
         AudioSource m_ShootAudioSource;
 
@@ -165,14 +172,21 @@ namespace Unity.FPS.Game
 
         private Queue<Rigidbody> m_PhysicalAmmoPool;
 
+        Animator m_Animator;
+
         void Awake()
         {
-            m_CurrentAmmo = MaxAmmo;
-            m_CarriedPhysicalBullets = HasPhysicalBullets ? ClipSize : 0;
+            CurrentAmmo = MaxAmmo;
+            ReserveAmmo = CurrentAmmo * 4;
+            m_CarriedPhysicalBullets = ClipSize;
             m_LastMuzzlePosition = WeaponMuzzle.position;
 
             m_ShootAudioSource = GetComponent<AudioSource>();
             DebugUtility.HandleErrorIfNullGetComponent<AudioSource, WeaponController>(m_ShootAudioSource, this,
+                gameObject);
+
+            m_Animator = GetComponent<Animator>();
+            DebugUtility.HandleErrorIfNullGetComponent<Animator, WeaponController>(m_Animator, this,
                 gameObject);
 
             if (UseContinuousShootSound)
@@ -200,6 +214,9 @@ namespace Unity.FPS.Game
 
         public void AddCarriablePhysicalBullets(int count) => m_CarriedPhysicalBullets = Mathf.Max(m_CarriedPhysicalBullets + count, MaxAmmo);
 
+        public void RemoveCarriablePhysicalBullets(int count) => m_CarriedPhysicalBullets -= count;
+
+
         void ShootShell()
         {
             Rigidbody nextShell = m_PhysicalAmmoPool.Dequeue();
@@ -221,7 +238,7 @@ namespace Unity.FPS.Game
         {
             if (m_CarriedPhysicalBullets > 0)
             {
-                m_CurrentAmmo = Mathf.Min(m_CarriedPhysicalBullets, ClipSize);
+                CurrentAmmo = Mathf.Min(m_CarriedPhysicalBullets, ClipSize);
             }
 
             IsReloading = false;
@@ -229,11 +246,13 @@ namespace Unity.FPS.Game
 
         public void StartReloadAnimation()
         {
-            if (m_CurrentAmmo < m_CarriedPhysicalBullets)
-            {
-                GetComponent<Animator>().SetTrigger("Reload");
-                IsReloading = true;
-            }
+            m_Animator.SetBool("IsReloading", true);
+            PlaySFX(tempReloadSFX);
+        }
+
+        public void StopReloadAnimation()
+        {
+            m_Animator.SetBool("IsReloading", false);
         }
 
         void Update()
@@ -251,13 +270,13 @@ namespace Unity.FPS.Game
 
         void UpdateAmmo()
         {
-            if (AutomaticReload && m_LastTimeShot + AmmoReloadDelay < Time.time && m_CurrentAmmo < MaxAmmo && !IsCharging)
+            if (AutomaticReload && m_LastTimeShot + AmmoReloadDelay < Time.time && CurrentAmmo < MaxAmmo && !IsCharging)
             {
                 // reloads weapon over time
-                m_CurrentAmmo += AmmoReloadRate * Time.deltaTime;
+                CurrentAmmo += AmmoReloadRate * Time.deltaTime;
 
                 // limits ammo to max value
-                m_CurrentAmmo = Mathf.Clamp(m_CurrentAmmo, 0, MaxAmmo);
+                CurrentAmmo = Mathf.Clamp(CurrentAmmo, 0, MaxAmmo);
 
                 IsCooling = true;
             }
@@ -272,7 +291,7 @@ namespace Unity.FPS.Game
             }
             else
             {
-                CurrentAmmoRatio = m_CurrentAmmo / MaxAmmo;
+                CurrentAmmoRatio = CurrentAmmo / MaxAmmo;
             }
         }
 
@@ -299,7 +318,7 @@ namespace Unity.FPS.Game
 
                     // See if we can actually add this charge
                     float ammoThisChargeWouldRequire = chargeAdded * AmmoUsageRateWhileCharging;
-                    if (ammoThisChargeWouldRequire <= m_CurrentAmmo)
+                    if (ammoThisChargeWouldRequire <= CurrentAmmo)
                     {
                         // Use ammo based on charge added
                         UseAmmo(ammoThisChargeWouldRequire);
@@ -315,7 +334,7 @@ namespace Unity.FPS.Game
         {
             if (UseContinuousShootSound)
             {
-                if (m_WantsToShoot && m_CurrentAmmo >= 1f)
+                if (m_WantsToShoot && CurrentAmmo >= 1f)
                 {
                     if (!m_ContinuousShootAudioSource.isPlaying)
                     {
@@ -346,7 +365,7 @@ namespace Unity.FPS.Game
 
         public void UseAmmo(float amount)
         {
-            m_CurrentAmmo = Mathf.Clamp(m_CurrentAmmo - amount, 0f, MaxAmmo);
+            CurrentAmmo = Mathf.Clamp(CurrentAmmo - amount, 0f, MaxAmmo);
             m_CarriedPhysicalBullets -= Mathf.RoundToInt(amount);
             m_CarriedPhysicalBullets = Mathf.Clamp(m_CarriedPhysicalBullets, 0, MaxAmmo);
             m_LastTimeShot = Time.time;
@@ -365,11 +384,11 @@ namespace Unity.FPS.Game
 
         bool TryShoot()
         {
-            if (m_CurrentAmmo >= 1f
+            if (CurrentAmmo >= 1f
                 && m_LastTimeShot + DelayBetweenShots < Time.time)
             {
                 HandleShoot();
-                m_CurrentAmmo -= 1f;
+                CurrentAmmo -= 1f;
 
                 return true;
             }
@@ -380,8 +399,8 @@ namespace Unity.FPS.Game
         bool TryBeginCharge()
         {
             if (!IsCharging
-                && m_CurrentAmmo >= AmmoUsedOnStartCharge
-                && Mathf.FloorToInt((m_CurrentAmmo - AmmoUsedOnStartCharge) * BulletsPerShot) > 0
+                && CurrentAmmo >= AmmoUsedOnStartCharge
+                && Mathf.FloorToInt((CurrentAmmo - AmmoUsedOnStartCharge) * BulletsPerShot) > 0
                 && m_LastTimeShot + DelayBetweenShots < Time.time)
             {
                 UseAmmo(AmmoUsedOnStartCharge);

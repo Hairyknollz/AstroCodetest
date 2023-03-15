@@ -107,6 +107,9 @@ namespace Unity.FPS.Gameplay
         [Tooltip("How long the player can slide for")]
         public float SlidingLength = 1f;
 
+        [Tooltip("Amount the player can turn during a slide")]
+        public float slideTurnAmount;
+
         public UnityAction<string> OnStanceChanged;
 
         public Vector3 CharacterVelocity { get; set; }
@@ -224,24 +227,21 @@ namespace Unity.FPS.Gameplay
             if (m_InputHandler.GetCrouchInputDown())
             {
                 SetCrouchingState(!IsCrouching, false);
-                
+                if (IsSliding)
+                    StopSliding();
             }
 
 
             UpdateCharacterHeight(false);
 
             HandleCharacterMovement();
-        }
-
-        private void FixedUpdate()
-        {
             //if IsSliding is true, begin the sliding movement
             if(IsSliding)
                 SlideMovement();
         }
 
-
-        //Changes player stance, sets IsSliding to true and begins the slide length coroutine countdown
+        // Changes player stance, sets IsSliding to true and begins the slide length coroutine countdown
+        // Sets the slide velocity to the same as the current character velocity to preserve speed
         void BeginSlide()
         {
             SlideVelocity = CharacterVelocity;
@@ -258,8 +258,10 @@ namespace Unity.FPS.Gameplay
         {
             //Vector3 friction = Vector3.Lerp(Vector3.zero, Vector3.one, .1f);
             //Moves character in the direction the slide was initiated from
-            m_Controller.Move(SlideVelocity * Time.fixedDeltaTime);
-            
+            m_Controller.Move(SlideVelocity * Time.deltaTime);
+            if (!IsGrounded)
+                StopSliding();
+
         }
         //Will stop player sliding after waiting for a few seconds defined by the SlidingLength variable
         IEnumerator SlidingLengthCountdown()

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using Unity.FPS.Game;
 using UnityEngine;
 using UnityEngine.Events;
@@ -72,8 +73,11 @@ namespace Unity.FPS.Gameplay
         [Tooltip("Layer to set FPS weapon gameObjects to")]
         public LayerMask FpsWeaponLayer;
 
+
+
         public bool IsAiming { get; private set; }
         public bool IsPointingAtEnemy { get; private set; }
+        public bool IsReloading { get; private set; }
         public int ActiveWeaponIndex { get; private set; }
 
         public UnityAction<WeaponController> OnSwitchedToWeapon;
@@ -129,12 +133,13 @@ namespace Unity.FPS.Gameplay
 
             if (activeWeapon != null && m_WeaponSwitchState == WeaponSwitchState.Up)
             {
-                if (!activeWeapon.AutomaticReload && m_InputHandler.GetReloadButtonDown() && activeWeapon.CurrentAmmoRatio < 1.0f)
-                {
-                    IsAiming = false;
-                    activeWeapon.StartReloadAnimation();
-                    return;
-                }
+                //if (!activeWeapon.AutomaticReload && m_InputHandler.GetReloadButtonDown() && activeWeapon.CurrentAmmoRatio < 1.0f)
+                //{
+                //    IsAiming = false;
+                //    activeWeapon.StartReloadAnimation();
+                //    return;
+                //}
+
                 // handle aiming down sights
                 IsAiming = m_InputHandler.GetAimInputHeld();
 
@@ -153,7 +158,7 @@ namespace Unity.FPS.Gameplay
             }
 
             // weapon switch handling
-            if (!IsAiming &&
+            if (!IsAiming && !IsReloading &&
                 (activeWeapon == null || !activeWeapon.IsCharging) &&
                 (m_WeaponSwitchState == WeaponSwitchState.Up || m_WeaponSwitchState == WeaponSwitchState.Down))
             {
@@ -187,8 +192,53 @@ namespace Unity.FPS.Gameplay
                     }
                 }
             }
+
+            if(m_InputHandler.GetReloadButtonDown())
+                ManualReloading();
         }
 
+
+        void ManualReloading()
+        {
+            if (GetActiveWeapon().ReserveAmmo > 0 && GetActiveWeapon().CurrentAmmo < GetActiveWeapon().MaxAmmo && !IsReloading && !GetActiveWeapon().AutomaticReload)
+            {
+                Debug.Log("BEGUN RELOADING");
+                IsReloading = true;
+                IsAiming = false;
+                //add reload animation and sfx
+                GetActiveWeapon().StartReloadAnimation();
+                StartCoroutine(Reloading());
+            }
+        }
+
+        IEnumerator Reloading()
+        {
+            yield return new WaitForSeconds(GetActiveWeapon().reloadingTime);
+            IsReloading = false;
+
+            CalculateAmmo();
+            GetActiveWeapon().StopReloadAnimation();
+
+            Debug.Log("FINISHED RELOADING");
+        }
+
+        void CalculateAmmo()
+        {
+            float _currentLoadedAmmo = GetActiveWeapon().CurrentAmmo;
+            float _currentReserveAmmo = GetActiveWeapon().ReserveAmmo;
+
+            float ammoRequired = GetActiveWeapon().MaxAmmo - _currentLoadedAmmo;
+            if (_currentReserveAmmo >= ammoRequired)
+            {
+                GetActiveWeapon().CurrentAmmo += ammoRequired;
+                GetActiveWeapon().ReserveAmmo -= ammoRequired;
+            }
+            else
+            {
+                GetActiveWeapon().CurrentAmmo += _currentReserveAmmo;
+                GetActiveWeapon().ReserveAmmo -= _currentReserveAmmo;
+            }
+        }
 
         // Update various animated features in LateUpdate because it needs to override the animated arm position
         void LateUpdate()
@@ -286,7 +336,7 @@ namespace Unity.FPS.Gameplay
             if (m_WeaponSwitchState == WeaponSwitchState.Up)
             {
                 WeaponController activeWeapon = GetActiveWeapon();
-                if (IsAiming && activeWeapon)
+                if (!IsReloading && IsAiming && activeWeapon)
                 {
                     m_WeaponMainLocalPosition = Vector3.Lerp(m_WeaponMainLocalPosition,
                         AimingWeaponPosition.localPosition + activeWeapon.AimOffset,
