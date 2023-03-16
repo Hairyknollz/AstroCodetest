@@ -7,7 +7,8 @@ namespace Unity.FPS.Game
 {
     public enum WeaponShootType
     {
-        Automatic
+        Automatic,
+        SemiAutomatic
     }
 
     [System.Serializable]
@@ -50,7 +51,8 @@ namespace Unity.FPS.Game
         [Tooltip("The type of weapon wil affect how it shoots")]
         public WeaponShootType ShootType;
 
-        [Tooltip("The projectile prefab")] public ProjectileBase ProjectilePrefab;
+        [Tooltip("The projectile prefab")] 
+        public ProjectileBase ProjectilePrefab;
 
         [Tooltip("Minimum duration between two shots")]
         public float DelayBetweenShots = 0.5f;
@@ -75,18 +77,25 @@ namespace Unity.FPS.Game
         [Header("Ammo Parameters")]
         [Tooltip("Should the player manually reload")]
         public bool AutomaticReload = true;
+
         [Tooltip("Has physical clip on the weapon and ammo shells are ejected when firing")]
         public bool HasPhysicalBullets = false;
+
         [Tooltip("Number of bullets in a clip")]
         public int ClipSize = 30;
+
         [Tooltip("Bullet Shell Casing")]
         public GameObject ShellCasing;
+
         [Tooltip("Weapon Ejection Port for physical ammo")]
         public Transform EjectionPort;
+
         [Tooltip("Force applied on the shell")]
         [Range(0.0f, 5.0f)] public float ShellCasingEjectionForce = 2.0f;
+
         [Tooltip("Maximum number of shell that can be spawned before reuse")]
         [Range(1, 30)] public int ShellPoolSize = 1;
+
         [Tooltip("Amount of ammo reloaded per second")]
         public float AmmoReloadRate = 1f;
 
@@ -374,7 +383,7 @@ namespace Unity.FPS.Game
         public bool HandleShootInputs(bool inputDown, bool inputHeld, bool inputUp)
         {
             m_WantsToShoot = inputDown || inputHeld;
-            if (inputHeld)
+            if (ShootType == WeaponShootType.Automatic && inputHeld || ShootType == WeaponShootType.SemiAutomatic && inputDown)
             {
                 return TryShoot();
             }
