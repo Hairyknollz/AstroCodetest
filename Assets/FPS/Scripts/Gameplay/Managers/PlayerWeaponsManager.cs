@@ -200,7 +200,7 @@ namespace Unity.FPS.Gameplay
 
         void ManualReloading()
         {
-            if (GetActiveWeapon().ReserveAmmo > 0 && GetActiveWeapon().CurrentAmmo < GetActiveWeapon().MaxAmmo && !IsReloading && !GetActiveWeapon().AutomaticReload)
+            if (GetActiveWeapon().ReserveAmmo > 0 && GetActiveWeapon().CurrentAmmo < GetActiveWeapon().MaxLoadedAmmo && !IsReloading && !GetActiveWeapon().AutomaticReload)
             {
                 Debug.Log("BEGUN RELOADING");
                 IsReloading = true;
@@ -227,7 +227,7 @@ namespace Unity.FPS.Gameplay
             float _currentLoadedAmmo = GetActiveWeapon().CurrentAmmo;
             float _currentReserveAmmo = GetActiveWeapon().ReserveAmmo;
 
-            float ammoRequired = GetActiveWeapon().MaxAmmo - _currentLoadedAmmo;
+            float ammoRequired = GetActiveWeapon().MaxLoadedAmmo - _currentLoadedAmmo;
             if (_currentReserveAmmo >= ammoRequired)
             {
                 GetActiveWeapon().CurrentAmmo += ammoRequired;

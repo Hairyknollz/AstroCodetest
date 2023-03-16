@@ -202,6 +202,7 @@ MonoBehaviour:
   AimZoomRatio: 0.5
   AimOffset: {x: 0, y: 0.075, z: 0}
   AutomaticReload: 0
+  reloadingTime: 2
   HasPhysicalBullets: 0
   ClipSize: 30
   ShellCasing: {fileID: 0}
@@ -210,7 +211,11 @@ MonoBehaviour:
   ShellPoolSize: 1
   AmmoReloadRate: 16
   AmmoReloadDelay: 1
-  MaxAmmo: 16
+  CurrentAmmo: 0
+  ReserveAmmo: 0
+  MaxReserveAmmo: 0
+  MaxLoadedAmmo: 20
+  ManualReloadSFX: {fileID: 8300000, guid: 9ec88242a8393c244b13c77f8f0f2394, type: 3}
   AutomaticReleaseOnCharged: 0
   MaxChargeDuration: 2
   AmmoUsedOnStartCharge: 1
@@ -220,15 +225,11 @@ MonoBehaviour:
     type: 3}
   UnparentMuzzleFlash: 0
   ShootSfx: {fileID: 8300000, guid: 53d2238f4c4b2aa4f8e559c7af9e0126, type: 3}
-  tempReloadSFX: {fileID: 8300000, guid: 9ec88242a8393c244b13c77f8f0f2394, type: 3}
   ChangeWeaponSfx: {fileID: 8300000, guid: 7b83d61917ac1224f942a0609b1221f2, type: 3}
-  reloadingTime: 2
   UseContinuousShootSound: 0
   ContinuousShootStartSfx: {fileID: 0}
   ContinuousShootLoopSfx: {fileID: 0}
   ContinuousShootEndSfx: {fileID: 0}
-  CurrentAmmo: 0
-  ReserveAmmo: 0
 --- !u!114 &8745372878802205896
 MonoBehaviour:
   m_ObjectHideFlags: 0

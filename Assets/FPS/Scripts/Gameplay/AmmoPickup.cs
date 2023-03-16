@@ -9,7 +9,7 @@ namespace Unity.FPS.Gameplay
         public WeaponController Weapon;
 
         [Tooltip("Number of bullets the player gets")]
-        public int BulletCount = 30;
+        public int AmmoCount = 30;
 
         protected override void OnPicked(PlayerCharacterController byPlayer)
         {
@@ -17,9 +17,9 @@ namespace Unity.FPS.Gameplay
             if (playerWeaponsManager)
             {
                 WeaponController weapon = playerWeaponsManager.HasWeapon(Weapon);
-                if (weapon != null)
+                if (weapon != null && weapon.ReserveAmmo < weapon.MaxReserveAmmo)
                 {
-                    weapon.AddCarriablePhysicalBullets(BulletCount);
+                    weapon.AddAmmo(AmmoCount);
 
                     AmmoPickupEvent evt = Events.AmmoPickupEvent;
                     evt.Weapon = weapon;
