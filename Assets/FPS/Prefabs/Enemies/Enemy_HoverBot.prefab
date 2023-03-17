@@ -782,7 +782,7 @@ MonoBehaviour:
     CrosshairColor: {r: 0, g: 0, b: 0, a: 0}
   WeaponRoot: {fileID: 8815063736924141185}
   WeaponMuzzle: {fileID: 2096565386399891227}
-  ShootType: 1
+  ShootType: 0
   ProjectilePrefab: {fileID: 8924682559891268397, guid: ec753d54f333bb944b8b04884ad63828,
     type: 3}
   DelayBetweenShots: 0.8
@@ -792,6 +792,7 @@ MonoBehaviour:
   AimZoomRatio: 1
   AimOffset: {x: 0, y: 0, z: 0}
   AutomaticReload: 1
+  reloadingTime: 2
   HasPhysicalBullets: 0
   ClipSize: 30
   ShellCasing: {fileID: 0}
@@ -800,7 +801,11 @@ MonoBehaviour:
   ShellPoolSize: 1
   AmmoReloadRate: 0.5
   AmmoReloadDelay: 0.5
-  MaxAmmo: 100
+  CurrentAmmo: 0
+  ReserveAmmo: 0
+  MaxReserveAmmo: 0
+  MaxLoadedAmmo: 8
+  ManualReloadSFX: {fileID: 0}
   AutomaticReleaseOnCharged: 0
   MaxChargeDuration: 2
   AmmoUsedOnStartCharge: 1
@@ -814,6 +819,11 @@ MonoBehaviour:
   ContinuousShootStartSfx: {fileID: 0}
   ContinuousShootLoopSfx: {fileID: 0}
   ContinuousShootEndSfx: {fileID: 0}
+  canShoot: 0
+  canShootBurst: 0
+  burstLength: 0
+  burstDelay: 0
+  perShotDelay: 0
 --- !u!82 &2231955200838058728
 AudioSource:
   m_ObjectHideFlags: 0

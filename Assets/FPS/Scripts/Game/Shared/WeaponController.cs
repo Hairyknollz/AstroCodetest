@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,7 +9,8 @@ namespace Unity.FPS.Game
     public enum WeaponShootType
     {
         Automatic,
-        SemiAutomatic
+        SemiAutomatic,
+        Burst
     }
 
     [System.Serializable]
@@ -120,6 +122,18 @@ namespace Unity.FPS.Game
         [Tooltip("sound played when manual reloading")]
         public AudioClip ManualReloadSFX;
 
+        [Header("Burst Fire")]
+        [Tooltip("How many shots per burst")]
+        public int BurstLength;
+
+        [Tooltip("Delay between bursts in seconds")]
+        public float BurstDelay;
+
+        [Tooltip("Delay between each shot in a burst in seconds")]
+        public float PerShotDelay;
+        bool canShootShot = true;
+        bool canShootBurst = true;
+
         [Header("Charging parameters (charging weapons only)")]
         [Tooltip("Trigger a shot when maximum charge is reached")]
         public bool AutomaticReleaseOnCharged;
@@ -190,6 +204,8 @@ namespace Unity.FPS.Game
         const string k_AnimAttackParameter = "Attack";
 
         private Queue<Rigidbody> m_PhysicalAmmoPool;
+
+        public bool HasFired;
 
         void Awake()
         {
@@ -403,23 +419,57 @@ namespace Unity.FPS.Game
             m_WantsToShoot = inputDown || inputHeld;
             if (ShootType == WeaponShootType.Automatic && inputHeld || ShootType == WeaponShootType.SemiAutomatic && inputDown)
             {
-                return TryShoot();
+                TryShoot();
+                return true;
             }
+            else if (ShootType == WeaponShootType.Burst && inputHeld)
+            {
+                TryShootBurst();
+                return true;
+            }
+            else
+                return false;
 
-            return false;
         }
 
-        bool TryShoot()
+        void TryShoot()
         {
             if (CurrentAmmo >= 1f && m_LastTimeShot + DelayBetweenShots < Time.time)
             {
                 HandleShoot();
-                CurrentAmmo -= 1f;
+            }
+        }
 
-                return true;
+        void TryShootBurst()
+        {
+            if(canShootBurst)
+            {
+                canShootBurst = false;
+                StartCoroutine(ShootBurst());
+            }
+        }
+
+        // Calls HandleShoot with a delay between calls as many times as specified in the burstLength variable
+        IEnumerator ShootBurst()
+        {
+            for (int i = 0; i < BurstLength; i++)
+            {
+                if (CurrentAmmo > 0)
+                {
+                    if (canShootShot)
+                    {
+                        canShootShot = false;
+                        HandleShoot();
+                        yield return new WaitForSeconds(PerShotDelay);
+                        canShootShot = true;
+                    }
+                }
+                else
+                    break;
             }
 
-            return false;
+            yield return new WaitForSeconds(BurstDelay);
+            canShootBurst = true;
         }
 
         bool TryBeginCharge()
@@ -457,7 +507,12 @@ namespace Unity.FPS.Game
 
         void HandleShoot()
         {
+            CurrentAmmo -= 1f;
+
             int bulletsPerShotFinal = BulletsPerShot;
+            
+            // Is used within PlayerWeaponsManager to simulate recoil
+            HasFired = true;
 
             // spawn all bullets with random direction
             for (int i = 0; i < bulletsPerShotFinal; i++)

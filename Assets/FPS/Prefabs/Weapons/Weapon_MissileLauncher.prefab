@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ad90ba0b1477764da373f5ec01a8cb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  WeaponName: Blaster Shotgun
+  WeaponName: Missile Launcher
   WeaponIcon: {fileID: 21300000, guid: 3c187e19c32c13542ba8a0c1a3a88ece, type: 3}
   CrosshairDataDefault:
     CrosshairSprite: {fileID: 21300000, guid: e881aa18189b12f4e915fc5b14ddc421, type: 3}
@@ -124,7 +124,7 @@ MonoBehaviour:
     CrosshairColor: {r: 1, g: 0, b: 0, a: 1}
   WeaponRoot: {fileID: 1505447205160222267}
   WeaponMuzzle: {fileID: 8334323006752503713}
-  ShootType: 0
+  ShootType: 2
   ProjectilePrefab: {fileID: 5542020336735652036, guid: 7a82e5c1746b3b94ea403749aaffd12c,
     type: 3}
   DelayBetweenShots: 0.4
@@ -146,8 +146,11 @@ MonoBehaviour:
   CurrentAmmo: 0
   ReserveAmmo: 0
   MaxReserveAmmo: 0
-  MaxLoadedAmmo: 6
+  MaxLoadedAmmo: 12
   ManualReloadSFX: {fileID: 8300000, guid: 9ec88242a8393c244b13c77f8f0f2394, type: 3}
+  burstLength: 3
+  burstDelay: 1
+  perShotDelay: 0.25
   AutomaticReleaseOnCharged: 0
   MaxChargeDuration: 2
   AmmoUsedOnStartCharge: 1
@@ -162,6 +165,7 @@ MonoBehaviour:
   ContinuousShootStartSfx: {fileID: 0}
   ContinuousShootLoopSfx: {fileID: 0}
   ContinuousShootEndSfx: {fileID: 0}
+  HasFired: 0
 --- !u!82 &8090847488450120274
 AudioSource:
   m_ObjectHideFlags: 0

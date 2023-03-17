@@ -73,8 +73,6 @@ namespace Unity.FPS.Gameplay
         [Tooltip("Layer to set FPS weapon gameObjects to")]
         public LayerMask FpsWeaponLayer;
 
-
-
         public bool IsAiming { get; private set; }
         public bool IsPointingAtEnemy { get; private set; }
         public bool IsReloading { get; private set; }
@@ -138,14 +136,15 @@ namespace Unity.FPS.Gameplay
                 IsAiming = m_InputHandler.GetAimInputHeld();
 
                 // handle shooting
-                bool hasFired = activeWeapon.HandleShootInputs(
+                activeWeapon.HandleShootInputs(
                     m_InputHandler.GetFireInputDown(),
                     m_InputHandler.GetFireInputHeld(),
                     m_InputHandler.GetFireInputReleased());
 
                 // Handle accumulating recoil
-                if (hasFired)
+                if (activeWeapon.HasFired)
                 {
+                    activeWeapon.HasFired = false;
                     m_AccumulatedRecoil += Vector3.back * activeWeapon.RecoilForce;
                     m_AccumulatedRecoil = Vector3.ClampMagnitude(m_AccumulatedRecoil, MaxRecoilDistance);
                 }
