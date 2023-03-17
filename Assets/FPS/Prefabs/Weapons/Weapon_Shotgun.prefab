@@ -76,7 +76,7 @@ GameObject:
   - component: {fileID: 8090847488450120274}
   - component: {fileID: 57868773239289148}
   m_Layer: 0
-  m_Name: Weapon_BlasterShotgun
+  m_Name: Weapon_Shotgun
   m_TagString: Untagged
   m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ad90ba0b1477764da373f5ec01a8cb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  WeaponName: Ballistic Shotgun
+  WeaponName: Shotgun
   WeaponIcon: {fileID: 21300000, guid: 3c187e19c32c13542ba8a0c1a3a88ece, type: 3}
   CrosshairDataDefault:
     CrosshairSprite: {fileID: 21300000, guid: e881aa18189b12f4e915fc5b14ddc421, type: 3}

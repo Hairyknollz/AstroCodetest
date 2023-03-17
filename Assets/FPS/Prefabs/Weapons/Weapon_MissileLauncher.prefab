@@ -124,7 +124,7 @@ MonoBehaviour:
     CrosshairColor: {r: 1, g: 0, b: 0, a: 1}
   WeaponRoot: {fileID: 1505447205160222267}
   WeaponMuzzle: {fileID: 8334323006752503713}
-  ShootType: 1
+  ShootType: 0
   ProjectilePrefab: {fileID: 5542020336735652036, guid: 7a82e5c1746b3b94ea403749aaffd12c,
     type: 3}
   DelayBetweenShots: 0.4

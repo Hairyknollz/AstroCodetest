@@ -133,13 +133,7 @@ namespace Unity.FPS.Gameplay
 
             if (activeWeapon != null && m_WeaponSwitchState == WeaponSwitchState.Up)
             {
-                //if (!activeWeapon.AutomaticReload && m_InputHandler.GetReloadButtonDown() && activeWeapon.CurrentAmmoRatio < 1.0f)
-                //{
-                //    IsAiming = false;
-                //    activeWeapon.StartReloadAnimation();
-                //    return;
-                //}
-
+                
                 // handle aiming down sights
                 IsAiming = m_InputHandler.GetAimInputHeld();
 
@@ -193,50 +187,57 @@ namespace Unity.FPS.Gameplay
                 }
             }
 
-            if(m_InputHandler.GetReloadButtonDown())
+            // if the player presses the reload button and the AutomaticReload boolean is set to false
+            // begin the manual reload
+            if(m_InputHandler.GetReloadButtonDown() && !GetActiveWeapon().AutomaticReload)
                 ManualReloading();
         }
 
 
         void ManualReloading()
         {
-            if (GetActiveWeapon().ReserveAmmo > 0 && GetActiveWeapon().CurrentAmmo < GetActiveWeapon().MaxLoadedAmmo && !IsReloading && !GetActiveWeapon().AutomaticReload)
+            // Gets a reference to the current active weapon
+            WeaponController activeWeapon = GetActiveWeapon();
+
+            if (!IsReloading && activeWeapon.ReserveAmmo > 0 && activeWeapon.CurrentAmmo < activeWeapon.MaxLoadedAmmo)
             {
-                Debug.Log("BEGUN RELOADING");
                 IsReloading = true;
                 IsAiming = false;
-                //add reload animation and sfx
-                GetActiveWeapon().StartReloadAnimation();
-                StartCoroutine(Reloading());
+
+                // Begins the reloading animation
+                activeWeapon.StartReloadAnimation();
+
+                // Starts the reloading coroutine
+                StartCoroutine(Reloading(activeWeapon));
             }
         }
 
-        IEnumerator Reloading()
+        // Waits a number of seconds before calculating the ammo values and stopping the reload animation
+        IEnumerator Reloading(WeaponController activeWeapon)
         {
-            yield return new WaitForSeconds(GetActiveWeapon().reloadingTime);
+            yield return new WaitForSeconds(activeWeapon.reloadingTime);
             IsReloading = false;
 
-            CalculateAmmo();
-            GetActiveWeapon().StopReloadAnimation();
-
-            Debug.Log("FINISHED RELOADING");
+            CalculateAmmo(activeWeapon);
+            activeWeapon.StopReloadAnimation();
         }
 
-        void CalculateAmmo()
+        // Calculates what ammo should be added to the current magazine and what should be removed from reserves
+        void CalculateAmmo(WeaponController activeWeapon)
         {
-            float _currentLoadedAmmo = GetActiveWeapon().CurrentAmmo;
-            float _currentReserveAmmo = GetActiveWeapon().ReserveAmmo;
+            float _currentLoadedAmmo = activeWeapon.CurrentAmmo;
+            float _currentReserveAmmo = activeWeapon.ReserveAmmo;
 
-            float ammoRequired = GetActiveWeapon().MaxLoadedAmmo - _currentLoadedAmmo;
+            float ammoRequired = activeWeapon.MaxLoadedAmmo - _currentLoadedAmmo;
             if (_currentReserveAmmo >= ammoRequired)
             {
-                GetActiveWeapon().CurrentAmmo += ammoRequired;
-                GetActiveWeapon().ReserveAmmo -= ammoRequired;
+                activeWeapon.CurrentAmmo += ammoRequired;
+                activeWeapon.ReserveAmmo -= ammoRequired;
             }
             else
             {
-                GetActiveWeapon().CurrentAmmo += _currentReserveAmmo;
-                GetActiveWeapon().ReserveAmmo -= _currentReserveAmmo;
+                activeWeapon.CurrentAmmo += _currentReserveAmmo;
+                activeWeapon.ReserveAmmo -= _currentReserveAmmo;
             }
         }
 

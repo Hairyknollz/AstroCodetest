@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5542020336735652036}
   - component: {fileID: 1203337828444365110}
   m_Layer: 0
-  m_Name: Projectile_SwarmMissile
+  m_Name: Projectile_Missile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

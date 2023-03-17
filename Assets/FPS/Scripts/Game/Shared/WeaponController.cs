@@ -111,7 +111,7 @@ namespace Unity.FPS.Game
         [Tooltip("The amount of ammo currently stored in reserve")]
         public float ReserveAmmo;
 
-        [Tooltip("The total amount of ammo that can be stored in reserve")]
+        [Tooltip("The total amount of ammo that can be stored in reserve. Is equal to MaxLoadedAmmo * 4")]
         public float MaxReserveAmmo;
 
         [Tooltip("Maximum amount of ammo in the gun")]
@@ -173,6 +173,7 @@ namespace Unity.FPS.Game
         public float CurrentAmmoRatio { get; private set; }
         public bool IsWeaponActive { get; private set; }
         public bool IsCooling { get; private set; }
+        public bool IsReloading { get; private set; }
         public float CurrentCharge { get; private set; }
         public Vector3 MuzzleWorldVelocity { get; private set; }
 
@@ -185,7 +186,6 @@ namespace Unity.FPS.Game
 
         AudioSource m_ShootAudioSource;
 
-        public bool IsReloading { get; private set; }
 
         const string k_AnimAttackParameter = "Attack";
 
@@ -194,8 +194,8 @@ namespace Unity.FPS.Game
         void Awake()
         {
             CurrentAmmo = MaxLoadedAmmo;
-            ReserveAmmo = CurrentAmmo * 4;
-            MaxReserveAmmo = ReserveAmmo;
+            MaxReserveAmmo = MaxLoadedAmmo * 4;
+            ReserveAmmo = MaxReserveAmmo / 2;
             m_CarriedPhysicalBullets = ClipSize;
             m_LastMuzzlePosition = WeaponMuzzle.position;
 
@@ -228,6 +228,7 @@ namespace Unity.FPS.Game
 
         public void AddCarriablePhysicalBullets(int count) => m_CarriedPhysicalBullets = Mathf.Max(m_CarriedPhysicalBullets + count, MaxLoadedAmmo);
 
+        // Adds ammo to the current weapons reserve ammo pool
         public void AddAmmo(int ammoToAdd)
         { 
             ReserveAmmo += ammoToAdd; 
@@ -268,12 +269,16 @@ namespace Unity.FPS.Game
 
         public void StartReloadAnimation()
         {
+            // Gets a reference to the weapons Animator component and sets its IsReloading bool to true which begins the reload animation
             GetComponent<Animator>().SetBool("IsReloading", true);
+
+            //Plays the reload SFX
             PlaySFX(ManualReloadSFX);
         }
 
         public void StopReloadAnimation()
         {
+            // Gets a reference to the weapons Animator component and sets its IsReloading bool to false which ends the reload animation
             GetComponent<Animator>().SetBool("IsReloading", false);
         }
 
@@ -406,8 +411,7 @@ namespace Unity.FPS.Game
 
         bool TryShoot()
         {
-            if (CurrentAmmo >= 1f
-                && m_LastTimeShot + DelayBetweenShots < Time.time)
+            if (CurrentAmmo >= 1f && m_LastTimeShot + DelayBetweenShots < Time.time)
             {
                 HandleShoot();
                 CurrentAmmo -= 1f;
