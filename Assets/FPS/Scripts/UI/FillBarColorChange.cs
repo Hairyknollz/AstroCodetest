@@ -16,14 +16,19 @@ namespace Unity.FPS.UI
         [Header("Background")] [Tooltip("Image for the background")]
         public Image BackgroundImage;
 
-        [Tooltip("Flash background color when empty")]
+        [Tooltip("Default background color")]
         public Color DefaultBackgroundColor;
 
-        [Tooltip("Sharpness for the color change")]
-        public Color FlashBackgroundColorEmpty;
+        [Tooltip("background color when low ammo")]
+        public Color LowAmmoBackgroundColor;
+
+        [Tooltip("background color when empty")]
+        public Color BackgroundColorEmpty;
 
         [Header("Values")] [Tooltip("Value to consider full")]
         public float FullValue = 1f;
+
+        [Tooltip("Value to consider low ammo")] public float LowAmmoValue = .3f;
 
         [Tooltip("Value to consider empty")] public float EmptyValue = 0f;
 
@@ -45,10 +50,13 @@ namespace Unity.FPS.UI
             if (currentRatio == FullValue && currentRatio != m_PreviousValue)
             {
                 ForegroundImage.color = FlashForegroundColorFull;
-            }
-            else if (currentRatio < EmptyValue)
+            }else if (currentRatio > EmptyValue && currentRatio <= LowAmmoValue)
             {
-                BackgroundImage.color = FlashBackgroundColorEmpty;
+                ForegroundImage.color = LowAmmoBackgroundColor;
+            }
+            else if (currentRatio == EmptyValue)
+            {
+                BackgroundImage.color = BackgroundColorEmpty;
             }
             else
             {

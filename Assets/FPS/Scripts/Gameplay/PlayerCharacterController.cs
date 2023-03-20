@@ -75,8 +75,7 @@ namespace Unity.FPS.Gameplay
         [Tooltip("Sound played for footsteps")]
         public AudioClip FootstepSfx;
 
-        [Tooltip("Sound played when sliding")]
-        public AudioClip SlidingSFX;
+
 
         [Tooltip("Sound played when jumping")] public AudioClip JumpSfx;
         [Tooltip("Sound played when landing")] public AudioClip LandSfx;
@@ -107,20 +106,25 @@ namespace Unity.FPS.Gameplay
         [Tooltip("How long the player can slide for")]
         public float SlidingLength = 1f;
 
-        [Tooltip("Amount the player can turn during a slide")]
-        public float slideTurnAmount;
+        //[Tooltip("Amount the player can turn during a slide")]
+        //public float slideTurnAmount;
+
+        [Tooltip("Sound played when sliding")]
+        public AudioClip SlidingSFX;
+        public Vector3 SlideVelocity { get; private set; }
+        public bool IsSliding { get; private set; }
+        Coroutine slidingLengthCoroutine;
+
+
 
         public UnityAction<string> OnStanceChanged;
 
         public Vector3 CharacterVelocity { get; set; }
-        public Vector3 SlideVelocity { get; set; }
         public bool IsGrounded { get; private set; }
         public bool HasJumpedThisFrame { get; private set; }
         public bool IsDead { get; private set; }
         public bool IsCrouching { get; private set; }
-        public bool IsSliding { get; private set; }
 
-        public Coroutine slidingLengthCoroutine;
 
         public float RotationMultiplier
         {
@@ -338,10 +342,10 @@ namespace Unity.FPS.Gameplay
         {
             // horizontal character rotation
             {
+                float yRot = m_InputHandler.GetLookInputsHorizontal() * RotationSpeed * RotationMultiplier;
                 // rotate the transform with the input speed around its local Y axis
-                transform.Rotate(
-                    new Vector3(0f, (m_InputHandler.GetLookInputsHorizontal() * RotationSpeed * RotationMultiplier),
-                        0f), Space.Self);
+                    transform.Rotate(
+                        new Vector3(0f, yRot, 0f), Space.Self);
             }
 
             // vertical camera rotation
