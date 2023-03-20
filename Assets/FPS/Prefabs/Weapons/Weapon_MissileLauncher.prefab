@@ -159,13 +159,14 @@ MonoBehaviour:
   MuzzleFlashPrefab: {fileID: 748781637555137343, guid: 9f671b22f25370048a18fb1f821294ec,
     type: 3}
   UnparentMuzzleFlash: 0
-  ShootSfx: {fileID: 8300000, guid: 53d2238f4c4b2aa4f8e559c7af9e0126, type: 3}
+  ShootSfx: {fileID: 8300000, guid: 0cacf9e8e361eb24e9101b28422f7c08, type: 3}
   ChangeWeaponSfx: {fileID: 8300000, guid: 7b83d61917ac1224f942a0609b1221f2, type: 3}
   UseContinuousShootSound: 0
   ContinuousShootStartSfx: {fileID: 0}
   ContinuousShootLoopSfx: {fileID: 0}
   ContinuousShootEndSfx: {fileID: 0}
   HasFired: 0
+  IsShootingBurst: 0
 --- !u!82 &8090847488450120274
 AudioSource:
   m_ObjectHideFlags: 0
