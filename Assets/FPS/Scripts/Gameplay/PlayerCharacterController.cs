@@ -239,13 +239,14 @@ namespace Unity.FPS.Gameplay
             UpdateCharacterHeight(false);
 
             HandleCharacterMovement();
+
             //if IsSliding is true, begin the sliding movement
             if(IsSliding)
                 SlideMovement();
         }
 
         // Changes player stance, sets IsSliding to true and begins the slide length coroutine countdown
-        // Sets the slide velocity to the same as the current character velocity to preserve speed
+        // Sets the slide velocity to the same as the current character velocity to preserve the current speed
         void BeginSlide()
         {
             SlideVelocity = CharacterVelocity;
@@ -260,7 +261,6 @@ namespace Unity.FPS.Gameplay
 
         void SlideMovement()
         {
-            //Vector3 friction = Vector3.Lerp(Vector3.zero, Vector3.one, .1f);
             //Moves character in the direction the slide was initiated from
             m_Controller.Move(SlideVelocity * Time.deltaTime);
             if (!IsGrounded)

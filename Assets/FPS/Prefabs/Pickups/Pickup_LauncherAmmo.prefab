@@ -85,7 +85,7 @@ MonoBehaviour:
   PickupVfxPrefab: {fileID: 133326187904302500, guid: 4d1efaa062e333f4cbc4c3564702d135,
     type: 3}
   Weapon: {fileID: 8323776800172828795, guid: bd12313ee37c54f4dba267f14728a664, type: 3}
-  AmmoCount: 3
+  AmmoCount: 6
 --- !u!114 &6721851018730462752
 MonoBehaviour:
   m_ObjectHideFlags: 0

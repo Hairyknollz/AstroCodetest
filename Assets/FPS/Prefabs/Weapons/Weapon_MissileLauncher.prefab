@@ -148,9 +148,9 @@ MonoBehaviour:
   MaxReserveAmmo: 0
   MaxLoadedAmmo: 12
   ManualReloadSFX: {fileID: 8300000, guid: 9ec88242a8393c244b13c77f8f0f2394, type: 3}
-  burstLength: 3
-  burstDelay: 1
-  perShotDelay: 0.25
+  BurstLength: 3
+  BurstDelay: 1
+  PerShotDelay: 0.15
   AutomaticReleaseOnCharged: 0
   MaxChargeDuration: 2
   AmmoUsedOnStartCharge: 1
