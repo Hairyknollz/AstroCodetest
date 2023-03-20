@@ -131,8 +131,7 @@ namespace Unity.FPS.Game
 
         [Tooltip("Delay between each shot in a burst in seconds")]
         public float PerShotDelay;
-        bool canShootShot = true;
-        bool canShootBurst = true;
+
 
         [Header("Charging parameters (charging weapons only)")]
         [Tooltip("Trigger a shot when maximum charge is reached")]
@@ -171,10 +170,15 @@ namespace Unity.FPS.Game
         public AudioClip ContinuousShootEndSfx;
         AudioSource m_ContinuousShootAudioSource = null;
         bool m_WantsToShoot = false;
-
+        public bool HasFired;
+        bool canShootShot = true;
+        bool canShootBurst = true;
+        public bool IsShootingBurst = false;
 
         public UnityAction OnShoot;
         public event Action OnShootProcessed;
+
+        Coroutine burstCoroutine;
 
         int m_CarriedPhysicalBullets;
         float m_LastTimeShot = Mathf.NegativeInfinity;
@@ -205,7 +209,6 @@ namespace Unity.FPS.Game
 
         private Queue<Rigidbody> m_PhysicalAmmoPool;
 
-        public bool HasFired;
 
         void Awake()
         {
@@ -308,6 +311,17 @@ namespace Unity.FPS.Game
             {
                 MuzzleWorldVelocity = (WeaponMuzzle.position - m_LastMuzzlePosition) / Time.deltaTime;
                 m_LastMuzzlePosition = WeaponMuzzle.position;
+            }
+        }
+
+        public void StopBurst()
+        {
+            if(burstCoroutine != null)
+            {
+                StopCoroutine(burstCoroutine);
+                canShootBurst = true;
+                canShootShot = true;
+                IsShootingBurst = false;
             }
         }
 
@@ -445,13 +459,15 @@ namespace Unity.FPS.Game
             if(canShootBurst)
             {
                 canShootBurst = false;
-                StartCoroutine(ShootBurst());
+                burstCoroutine = StartCoroutine(ShootBurst());
             }
         }
 
         // Calls HandleShoot with a delay between calls as many times as specified in the burstLength variable
         IEnumerator ShootBurst()
         {
+            IsShootingBurst = true;
+
             for (int i = 0; i < BurstLength; i++)
             {
                 if (CurrentAmmo > 0)
@@ -469,6 +485,7 @@ namespace Unity.FPS.Game
             }
 
             yield return new WaitForSeconds(BurstDelay);
+            IsShootingBurst = false;
             canShootBurst = true;
         }
 

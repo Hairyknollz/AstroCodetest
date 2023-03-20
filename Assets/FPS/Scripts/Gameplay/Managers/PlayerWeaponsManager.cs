@@ -197,7 +197,8 @@ namespace Unity.FPS.Gameplay
         {
             // Gets a reference to the current active weapon
             WeaponController activeWeapon = GetActiveWeapon();
-
+            if(activeWeapon.IsShootingBurst)
+                activeWeapon.StopBurst();
             if (!IsReloading && activeWeapon.ReserveAmmo > 0 && activeWeapon.CurrentAmmo < activeWeapon.MaxLoadedAmmo)
             {
                 IsReloading = true;
@@ -310,6 +311,9 @@ namespace Unity.FPS.Gameplay
                 // otherwise, remember we are putting down our current weapon for switching to the next one
                 else
                 {
+                    if(GetActiveWeapon().IsShootingBurst)
+                        GetActiveWeapon().StopBurst();
+
                     m_WeaponSwitchState = WeaponSwitchState.PutDownPrevious;
                 }
             }
