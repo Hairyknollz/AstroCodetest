@@ -70,7 +70,7 @@ namespace Unity.FPS.AI
         public Transform DeathVfxSpawnPoint;
 
         [Header("Loot")] [Tooltip("The object this enemy can drop when dying")]
-        public GameObject LootPrefab;
+        public GameObject[] LootPrefabs;
 
         [Tooltip("The chance the object has to drop")] [Range(0, 1)]
         public float DropRate = 1f;
@@ -369,7 +369,9 @@ namespace Unity.FPS.AI
             // loot an object
             if (TryDropItem())
             {
-                Instantiate(LootPrefab, transform.position, Quaternion.identity);
+                var rand = Random.Range(0, LootPrefabs.Length);
+                Instantiate(LootPrefabs[rand], transform.position, Quaternion.identity);
+                Debug.Log("Dropped " + LootPrefabs[rand].name);
             }
 
             // this will call the OnDestroy function
@@ -433,7 +435,7 @@ namespace Unity.FPS.AI
 
         public bool TryDropItem()
         {
-            if (DropRate == 0 || LootPrefab == null)
+            if (DropRate == 0 || LootPrefabs == null)
                 return false;
             else if (DropRate == 1)
                 return true;
