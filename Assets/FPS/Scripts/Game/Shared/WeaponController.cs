@@ -290,8 +290,6 @@ namespace Unity.FPS.Game
         {
             // Gets a reference to the weapons Animator component and sets its IsReloading bool to true which begins the reload animation
             GetComponent<Animator>().SetBool("IsReloading", true);
-
-            //Plays the reload SFX
             PlaySFX(ManualReloadSFX);
         }
 
@@ -311,17 +309,6 @@ namespace Unity.FPS.Game
             {
                 MuzzleWorldVelocity = (WeaponMuzzle.position - m_LastMuzzlePosition) / Time.deltaTime;
                 m_LastMuzzlePosition = WeaponMuzzle.position;
-            }
-        }
-
-        public void StopBurst()
-        {
-            if(burstCoroutine != null)
-            {
-                StopCoroutine(burstCoroutine);
-                canShootBurst = true;
-                canShootShot = true;
-                IsShootingBurst = false;
             }
         }
 
@@ -454,12 +441,24 @@ namespace Unity.FPS.Game
             }
         }
 
+        #region BurstFire
         void TryShootBurst()
         {
             if(canShootBurst)
             {
                 canShootBurst = false;
                 burstCoroutine = StartCoroutine(ShootBurst());
+            }
+        }
+
+        public void StopBurst()
+        {
+            if (burstCoroutine != null)
+            {
+                StopCoroutine(burstCoroutine);
+                canShootBurst = true;
+                canShootShot = true;
+                IsShootingBurst = false;
             }
         }
 
@@ -488,7 +487,7 @@ namespace Unity.FPS.Game
             IsShootingBurst = false;
             canShootBurst = true;
         }
-
+        #endregion
         bool TryBeginCharge()
         {
             if (!IsCharging
