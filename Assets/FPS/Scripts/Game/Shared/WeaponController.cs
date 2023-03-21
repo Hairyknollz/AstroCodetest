@@ -212,9 +212,6 @@ namespace Unity.FPS.Game
 
         void Awake()
         {
-            CurrentAmmo = MaxLoadedAmmo;
-            MaxReserveAmmo = MaxLoadedAmmo * 4;
-            ReserveAmmo = MaxReserveAmmo / 2;
             m_CarriedPhysicalBullets = ClipSize;
             m_LastMuzzlePosition = WeaponMuzzle.position;
 
@@ -243,6 +240,13 @@ namespace Unity.FPS.Game
                     m_PhysicalAmmoPool.Enqueue(shell.GetComponent<Rigidbody>());
                 }
             }
+        }
+
+        void Start()
+        {
+            CurrentAmmo = MaxLoadedAmmo;
+            MaxReserveAmmo = MaxLoadedAmmo * 4;
+            ReserveAmmo = MaxReserveAmmo / 2;
         }
 
         public void AddCarriablePhysicalBullets(int count) => m_CarriedPhysicalBullets = Mathf.Max(m_CarriedPhysicalBullets + count, MaxLoadedAmmo);
