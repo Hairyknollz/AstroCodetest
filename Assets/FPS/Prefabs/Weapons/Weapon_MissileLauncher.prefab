@@ -148,6 +148,7 @@ MonoBehaviour:
   MaxReserveAmmo: 0
   MaxLoadedAmmo: 12
   ManualReloadSFX: {fileID: 8300000, guid: 9ec88242a8393c244b13c77f8f0f2394, type: 3}
+  emptyMagShotSFX: {fileID: 8300000, guid: 7b83d61917ac1224f942a0609b1221f2, type: 3}
   BurstLength: 3
   BurstDelay: 1
   PerShotDelay: 0.15

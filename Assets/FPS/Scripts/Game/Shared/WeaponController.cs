@@ -121,6 +121,9 @@ namespace Unity.FPS.Game
 
         [Tooltip("sound played when manual reloading")]
         public AudioClip ManualReloadSFX;
+        
+        [Tooltip("sound played when manual reloading")]
+        public AudioClip emptyMagShotSFX;
 
         [Header("Burst Fire")]
         [Tooltip("How many shots per burst")]
@@ -261,7 +264,6 @@ namespace Unity.FPS.Game
             }
         
         }
-
 
         void ShootShell()
         {
@@ -442,6 +444,13 @@ namespace Unity.FPS.Game
             if (CurrentAmmo >= 1f && m_LastTimeShot + DelayBetweenShots < Time.time)
             {
                 HandleShoot();
+            } //else play a suitable sound to signify the weapon is empty
+            else if (CurrentAmmo == 0 && m_LastTimeShot + DelayBetweenShots < Time.time)
+            {
+                m_LastTimeShot = Time.time;
+
+                if (emptyMagShotSFX)
+                    PlaySFX(emptyMagShotSFX);
             }
         }
 
@@ -482,9 +491,14 @@ namespace Unity.FPS.Game
                         yield return new WaitForSeconds(PerShotDelay);
                         canShootShot = true;
                     }
-                }
+                } // else play a suitable sound to signify the weapon is empty
                 else
+                {
+                    if(emptyMagShotSFX)
+                        PlaySFX(emptyMagShotSFX);
+
                     break;
+                }
             }
 
             yield return new WaitForSeconds(BurstDelay);
